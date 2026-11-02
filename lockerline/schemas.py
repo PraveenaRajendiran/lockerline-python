@@ -75,6 +75,13 @@ class PickupIn(BaseModel):
     )
 
 
+class PickupOut(BaseModel):
+    parcel_id: str
+    door: str
+    opened_at: UtcZ
+    dwell_seconds: int
+
+
 class ParcelOut(BaseModel):
     parcel_id: str
     state: Literal["holding", "collected"]

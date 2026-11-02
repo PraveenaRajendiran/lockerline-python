@@ -28,6 +28,21 @@ def test_no_door_free(client):
     assert (r.status_code, r.json()["type"]) == (409, "/errors/no-door-free")
 
 
+def test_code_used(client):
+    code = drop(client)["code"]
+
+    assert client.post(
+        "/pickups",
+        json={"code": code},
+    ).status_code == 200
+
+    r = client.post(
+        "/pickups",
+        json={"code": code},
+    )
+
+    assert (r.status_code, r.json()["type"]) == (409, "/errors/code-used")
+
 def test_no_such_code(client):
     r = client.post(
         "/pickups",
@@ -68,7 +83,7 @@ def test_problem_body_has_only_the_documented_fields(client):
 
     body = r.json()
 
-    assert set(body) == {"type", "title", "status", "detail", "free_sizes"}     # the one field the ticket names
+    assert set(body) == {"type", "title", "status", "detail", "free_sizes"}  # the one field the ticket names
     assert body["status"] == 409 and body["free_sizes"] == ["S", "M"] and "Traceback" not in r.text
 
 
@@ -90,7 +105,7 @@ def test_routes_never_build_error_responses():
             for a in n.names
         }
 
-        assert not FORBIDDEN & (names | attrs | imported),(
+        assert not FORBIDDEN & (names | attrs | imported), (
             path.name,
             FORBIDDEN & (names | attrs | imported),
         )

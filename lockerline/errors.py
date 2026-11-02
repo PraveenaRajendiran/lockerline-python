@@ -50,7 +50,12 @@ class CodeExpired(DomainError):
     status, type, title = 404, "/errors/code-expired", "This code has expired"
 
 
+class CodeUsed(DomainError):
+    status, type, title = 409, "/errors/code-used", "This code has already opened its door"
+
+
 # (status, type, title) of the errors that are not domain refusals
+
 VALIDATION_BODY = (
     422, "/errors/validation", "The request body is not valid"
 )  # a body that fails validation

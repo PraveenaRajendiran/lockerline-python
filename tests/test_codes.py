@@ -89,7 +89,7 @@ def test_codes_are_not_derivable_from_the_parcel_id(tmp_path, clock):
 
     assert codes[0] != codes[1]
 
-    
+
 def test_a_code_an_uncollected_parcel_holds_is_never_issued_again(client, db):
     """The collision bug: the random source repeats a code while the first parcel is still in its door.
     The drop draws again, so every uncollected parcel's code names exactly one door."""
@@ -110,3 +110,42 @@ def test_a_code_an_uncollected_parcel_holds_is_never_issued_again(client, db):
 
     assert len(set(hashes)) == 2
 
+
+def test_a_code_that_comes_round_again_opens_the_uncollected_parcel(client):
+    """A collected parcel's code may be issued again; pickup resolves it to the parcel still in its door."""
+
+    with patch(
+        "lockerline.services.drops.issue_code",
+        side_effect=["333333", "333333"],
+    ):
+        first = drop(client, "S", "101")
+
+        assert client.post(
+            "/pickups",
+            json={"code": "333333"},
+        ).json()["parcel_id"] == first["parcel_id"]
+
+        second = drop(client, "M", "302")
+
+    assert second["code"] == "333333"
+
+    r = client.post(
+        "/pickups",
+        json={"code": "333333"},
+    )
+
+    assert (
+        r.status_code == 200
+        and r.json()["parcel_id"] == second["parcel_id"]
+        and r.json()["door"] == second["door"]
+    )
+
+    again = client.post(
+        "/pickups",
+        json={"code": "333333"},
+    )
+
+    assert (
+        again.status_code == 409
+        and again.json()["type"] == "/errors/code-used"
+    )
