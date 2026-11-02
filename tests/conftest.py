@@ -21,6 +21,7 @@ def make_settings(tmp_path: Path, **overrides) -> Settings:
         "database_url": f"sqlite:///{db}",
         "seed_dir": str(ROOT / "seed"),
         "free_window_hours": 48,
+        "code_hash_key": "test-key",
     }
     values.update(overrides)
     return Settings(_env_file=None, **values)

@@ -44,6 +44,7 @@ class Resident(Base):
     name: Mapped[str] = mapped_column(String(80))
 
 
+
 class Parcel(Base):
     __tablename__ = "parcels"
 
@@ -52,5 +53,13 @@ class Parcel(Base):
     flat: Mapped[str] = mapped_column(String(8))
     size_class: Mapped[str] = mapped_column(String(1))  # S | M | L
     door_id: Mapped[int] = mapped_column(ForeignKey("doors.id"))
-    state: Mapped[str] = mapped_column(String(12))                 # holding | collected
+    state: Mapped[str] = mapped_column(String(12))  # holding | collected
     dropped_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    # The code itself is never stored — only a keyed hash of it
+    code_hash: Mapped[str] = mapped_column(String(64))
+    code_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    code_used_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )

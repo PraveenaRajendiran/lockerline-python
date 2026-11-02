@@ -1,5 +1,7 @@
 
-"""A courier books a drop. Door choice and parcel are one transaction."""
+"""A courier books a drop. Door choice, parcel and code are one transaction."""
+
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -7,6 +9,8 @@ from sqlalchemy.orm import Session
 from ..clock import Clock
 from ..errors import NoDoorFree, NoSuchFlat
 from ..models import Door, Parcel, Resident, Tower
+from ..settings import Settings
+from .codes import hash_code, issue_code
 from .doors import free_sizes
 
 
@@ -28,14 +32,44 @@ def choose_door(
     )
 
 
+def unique_code(
+    session: Session,
+    tower_id: int,
+    key: str,
+) -> tuple[str, str]:
+    """A fresh code whose hash no parcel in this tower still holds unused, so a code always names one door."""
+    while True:
+        code = issue_code()
+        code_hash = hash_code(key, code)
+
+        clash = session.scalar(
+            select(Parcel.id)
+            .where(
+                Parcel.tower_id == tower_id,
+                Parcel.code_hash == code_hash,
+                Parcel.code_used_at.is_(None),
+            )
+            .limit(1)
+        )
+
+        if clash is None:
+            return code, code_hash
+
+
 def drop(
     session: Session,
     tower: Tower,
     size_class: str,
     flat: str,
     clock: Clock,
-) -> tuple[Parcel, Door]:
-    resident = session.scalar(select(Resident).where(Resident.tower_id == tower.id, Resident.flat == flat))
+    settings: Settings,
+) -> tuple[Parcel, Door, str]:
+    resident = session.scalar(
+        select(Resident).where(
+            Resident.tower_id == tower.id,
+            Resident.flat == flat,
+        )
+    )
 
     if resident is None:
         raise NoSuchFlat(
@@ -50,7 +84,16 @@ def drop(
             free_sizes=free_sizes(session, tower.id),
         )
 
+    
     now = clock.now()
+
+    code, code_hash = unique_code(
+        session,
+        tower.id,
+        settings.code_hash_key,
+    )
+
+    expires_at = now + timedelta(hours=settings.free_window_hours)
 
     parcel = Parcel(
         tower_id=tower.id,
@@ -59,6 +102,8 @@ def drop(
         door_id=door.id,
         state="holding",
         dropped_at=now,
+        code_hash=code_hash,
+        code_expires_at=expires_at,
     )
 
     session.add(parcel)
@@ -68,4 +113,4 @@ def drop(
 
     session.commit()
 
-    return parcel, door
+    return parcel, door, code

@@ -58,12 +58,16 @@ class DropIn(BaseModel):
     )
 
 
+
 class DropOut(BaseModel):
     parcel_id: str
     door: str
     size_class: SizeClass
     flat: str
     dropped_at: UtcZ
+    code: str = Field(description="Shown once, to the courier")
+    expires_at: UtcZ
+
 
 
 class ParcelOut(BaseModel):
