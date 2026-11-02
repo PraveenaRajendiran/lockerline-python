@@ -1,5 +1,6 @@
 
-"""Request and response models. Every response goes through one of these; bodies use Field constraints.
+"""
+Request and response models. Every response goes through one of these; bodies use Field constraints.
 Optional fields are left out of the body when they have no value (the routes use response_model_exclude_none).
 """
 
@@ -58,7 +59,6 @@ class DropIn(BaseModel):
     )
 
 
-
 class DropOut(BaseModel):
     parcel_id: str
     door: str
@@ -68,6 +68,11 @@ class DropOut(BaseModel):
     code: str = Field(description="Shown once, to the courier")
     expires_at: UtcZ
 
+
+class PickupIn(BaseModel):
+    code: str = Field(
+        pattern=r"^\d{6}$",
+    )
 
 
 class ParcelOut(BaseModel):

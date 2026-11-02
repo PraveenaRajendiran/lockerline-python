@@ -10,12 +10,13 @@ from fastapi.staticfiles import StaticFiles
 
 from .db import init_db, make_engine, make_sessionmaker
 from .handlers import install_handlers
-from .routers import doors, drops, parcels
+from .routers import doors, drops, pickups, parcels
 from .services.seed import seed
 from .settings import Settings
 
 
 STATIC = Path(__file__).parent / "static"
+
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
@@ -44,7 +45,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     install_handlers(app)
 
-    for r in (doors.router, drops.router, parcels.router):
+    for r in (doors.router, drops.router, pickups.router, parcels.router):
         app.include_router(r)
 
     app.mount(
