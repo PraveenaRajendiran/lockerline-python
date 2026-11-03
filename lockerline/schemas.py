@@ -113,3 +113,5 @@ class SettingsOut(BaseModel):
     sizes: list[SizeClass]
 
 
+class HealthOut(BaseModel):
+    status: Literal["ok"]

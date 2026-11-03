@@ -1,4 +1,3 @@
-
 import logging
 import subprocess
 import sys
@@ -19,6 +18,7 @@ OPERATIONS = {
     ("post", "/pickups"): ("pickups", {"200", "404", "409", "422", "500"}),
     ("get", "/parcels/{parcel_id}"): ("parcels", {"200", "404", "500"}),
     ("get", "/settings"): ("settings", {"200", "500"}),
+    ("get", "/healthz"): ("settings", {"200", "500"}),
 }
 
 
