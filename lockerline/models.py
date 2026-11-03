@@ -7,7 +7,7 @@ Seeding stays idempotent through its existence checks, not through composite uni
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -71,3 +71,16 @@ class Parcel(Base):
         DateTime(timezone=True),
         nullable=True,
     )
+
+
+class Event(Base):
+    """One row per transition, written in the same transaction as the change. Insert only."""
+
+    __tablename__ = "events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tower_id: Mapped[int] = mapped_column(ForeignKey("towers.id"))
+    parcel_id: Mapped[int] = mapped_column(ForeignKey("parcels.id"))
+    kind: Mapped[str] = mapped_column(String(16))  # dropped | code_issued | opened
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    data: Mapped[str] = mapped_column(Text, default="{}")  # JSON: ids and facts, never the code or a name

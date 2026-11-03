@@ -2,12 +2,14 @@
 """A code opens its door once. Accept, collect, free the door and stamp dwell — one transaction."""
 
 from sqlalchemy import select
+
 from sqlalchemy.orm import Session
 
 from ..clock import Clock, as_utc
 from ..errors import CodeExpired, CodeUsed, NoSuchCode
 from ..models import Door, Parcel
 from ..settings import Settings
+from . import events
 from .codes import hash_code, matches
 
 
@@ -66,6 +68,15 @@ def pickup(
     parcel.code_used_at = now
 
     door.current_parcel_id = None
+
+    events.record(
+        session,
+        parcel.tower_id,
+        parcel.id,
+        "opened",
+        now,
+        {"door": door.no, "dwell_seconds": dwell},
+    )
 
     session.commit()
 
