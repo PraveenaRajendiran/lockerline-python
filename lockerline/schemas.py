@@ -1,3 +1,4 @@
+
 """
 Request and response models. Every response goes through one of these; bodies use Field constraints.
 Optional fields are left out of the body when they have no value (the routes use response_model_exclude_none).
@@ -105,3 +106,10 @@ class ParcelOut(BaseModel):
     flat: str
     dropped_at: UtcZ
     events: list[EventOut]
+
+
+class SettingsOut(BaseModel):
+    free_window_hours: int
+    sizes: list[SizeClass]
+
+

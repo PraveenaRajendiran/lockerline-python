@@ -1,19 +1,13 @@
 
 import logging
-
 import subprocess
-
 import sys
-
-
 from pathlib import Path
-
 
 from lockerline.errors import PROBLEM
 
 
 ROOT = Path(__file__).resolve().parent.parent
-
 PKG = ROOT / "lockerline"
 
 
@@ -24,6 +18,7 @@ OPERATIONS = {
     ("post", "/drops"): ("drops", {"201", "400", "409", "422", "500"}),
     ("post", "/pickups"): ("pickups", {"200", "404", "409", "422", "500"}),
     ("get", "/parcels/{parcel_id}"): ("parcels", {"200", "404", "500"}),
+    ("get", "/settings"): ("settings", {"200", "500"}),
 }
 
 
@@ -74,7 +69,7 @@ def test_every_refusal_is_documented_with_a_problem_example(client):
     validation = _examples(drops["422"])
     assert [e["type"] for e in validation] == ["/errors/validation"] and validation[0]["errors"][0]["field"] == "size_class"
 
-    assert set(drops["422"]["content"]) == {PROBLEM}                  # not FastAPI's stock HTTPValidationError
+    assert set(drops["422"]["content"]) == {PROBLEM}  # not FastAPI's stock HTTPValidationError
 
     pickups = spec["paths"]["/pickups"]["post"]["responses"]
 
@@ -107,6 +102,8 @@ def test_spec_documents_exactly_what_each_operation_can_answer(client):
                 assert {"type", "title", "status", "detail"} <= set(ex), (method, path, status, ex)
                 assert str(ex["status"]) == status and ex["type"].startswith("/errors/")
 
+    assert _examples(spec["paths"]["/settings"]["get"]["responses"]["500"])[0]["type"] == "/errors/internal"
+
     schemas = spec["components"]["schemas"]
     assert "HTTPValidationError" not in schemas
     assert "ValidationError" not in schemas
@@ -134,6 +131,7 @@ def test_unexpected_exception_is_a_generic_problem_with_request_id(app, client, 
 
     assert any(body["request_id"] in line and "unhandled error path=/boom" in line for line in lines), "the error is logged with its id"
 
+
 def test_framework_errors_are_problem_json_too(client):
     """One handler produces every error body — the framework's own 404 (no such route) and 405 (wrong method) too."""
     r = client.get("/nope")
@@ -148,7 +146,7 @@ def test_framework_errors_are_problem_json_too(client):
     assert r.headers["content-type"].startswith(PROBLEM)
     assert r.json()["type"] == "/errors/method-not-allowed"
     assert r.json()["title"] == "Method not allowed"
-    assert r.headers["allow"] == "GET"                        # the header the framework's exception carries is kept
+    assert r.headers["allow"] == "GET"  # the header the framework's exception carries is kept
 
 
 def test_services_import_nothing_from_fastapi_even_indirectly():

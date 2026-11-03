@@ -20,7 +20,7 @@ def choose_door(
     tower_id: int,
     size_class: str,
 ) -> Door | None:
-    """Exact size only, lowest door number first — deterministic, so a test can name the door."""
+    """Exact size only, lowest door number first — deterministic, so the rule table can name the door."""
     return session.scalar(
         select(Door)
         .where(

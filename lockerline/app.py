@@ -1,6 +1,8 @@
 
 """The application: settings read once, the schema created and seeded before the first request, routers mounted,
+
 one error handler, a request id on every request."""
+
 import copy
 import json
 import uuid
@@ -20,6 +22,7 @@ from .handlers import (
     install_handlers,
 )
 from .routers import doors, drops, pickups, parcels
+from .routers import settings as settings_router
 from .services.seed import seed
 from .settings import Settings
 
@@ -47,6 +50,7 @@ TAGS = [
         "description": "The rules in force, and health",
     },
 ]
+
 DESCRIPTION = "A bank of 48 parcel lockers: couriers drop, residents collect with a code that expires."
 
 
@@ -69,7 +73,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title="LockerLine",
         version="0.1.0",
         lifespan=lifespan,
-        openapi_tags=TAGS, description=DESCRIPTION,
+        openapi_tags=TAGS,
+        description=DESCRIPTION,
     )
 
     app.state.settings = settings
@@ -85,7 +90,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     install_handlers(app)
 
-    for r in (doors.router, drops.router, pickups.router, parcels.router):
+    for r in (
+        doors.router,
+        drops.router,
+        pickups.router,
+        parcels.router,
+        settings_router.router,
+    ):
         app.include_router(r)
 
     app.mount(
@@ -142,7 +153,7 @@ def honest_openapi(app: FastAPI):
 
         components = schema.get("components", {}).get("schemas", {})
 
-        for name in ("HTTPValidationError", "ValidationError"):       # the first references the second
+        for name in ("HTTPValidationError", "ValidationError"):  # the first references the second
             others = {
                 k: v for k, v in components.items()
                 if k != name
