@@ -64,6 +64,8 @@ VALIDATION_PARAMS = (
     400, "/errors/validation", "Invalid query parameter"
 )  # an unknown filter value
 
+INTERNAL = (500, "/errors/internal", "Something went wrong")
+
 NOT_FOUND = (
     404, "/errors/not-found", "No such resource"
 )  # no route at this path

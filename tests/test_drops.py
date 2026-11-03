@@ -110,3 +110,10 @@ def test_failure_after_parcel_insert_rolls_everything_back(client, db):
         assert s.scalar(
             select(Door).where(Door.no == "D21")
         ).current_parcel_id is None
+
+
+def test_location_header_is_documented_on_the_201(client):
+    created = client.get("/openapi.json").json()["paths"]["/drops"]["post"]["responses"]["201"]
+
+    assert created["headers"]["Location"]["schema"] == {"type": "string"}
+    assert created["headers"]["Location"]["description"]

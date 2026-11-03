@@ -1,5 +1,5 @@
 
-"""Routes parse and delegate; they hold no rules. The request-scoped dependencies
+"""One router per resource. Routes parse and delegate; they hold no rules. The request-scoped dependencies
 (session, clock, settings) are declared here so the services never see the web framework."""
 
 from typing import Annotated
