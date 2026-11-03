@@ -1,3 +1,4 @@
+
 import logging
 import subprocess
 import sys
@@ -130,6 +131,7 @@ def test_unexpected_exception_is_a_generic_problem_with_request_id(app, client, 
     lines = [rec.getMessage() for rec in caplog.records]
 
     assert any(body["request_id"] in line and "unhandled error path=/boom" in line for line in lines), "the error is logged with its id"
+    assert any(line.startswith("request method=GET path=/boom status=500") for line in lines), "the request still gets its line"
 
 
 def test_framework_errors_are_problem_json_too(client):

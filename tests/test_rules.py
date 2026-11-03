@@ -112,6 +112,7 @@ def test_rule_table(tmp_path, row):
         if expected_type:
             assert body["type"] == expected_type
 
+
 def test_only_window_rows_move_when_the_window_changes():
     moved = {
         row["case"]
@@ -154,7 +155,7 @@ def test_settings_endpoint_shows_the_live_window(tmp_path, clock):
 
 
 def test_the_rule_book_shows_the_rows_the_tests_run():
-    """The Rule book screen renders a copy of tests/rules.csv; the copy must equal the
+    """The Rule book screen renders a copy of tests/rules.csv (the image carries no tests/); the copy must equal the
     file: same cases, tags, setup, action and expected status/type at both windows, in the same order.
     """
 

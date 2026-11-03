@@ -1,4 +1,3 @@
-
 """Health answers when the process is up and can reach its database; the Dockerfile is the one the ticket names
 and it keeps that contract. (docker build and run themselves are checked by hand: see the README.)"""
 
@@ -46,6 +45,10 @@ def test_dockerfile_matches_the_contract():
 
     assert re.search(r"ENV HOST=0\.0\.0\.0 \\\n\s+PORT=8080 \\", text)
 
+    assert "DATABASE_URL" not in text, "the env-file carries the database path; nothing else is baked in"
+
     assert 'CMD ["sh", "-c", "exec uvicorn lockerline.app:app --host \\"$HOST\\" --port \\"$PORT\\""]' in text
+
+    assert 'VOLUME ["/data"]' in text
 
     assert "EXPOSE 8080" in text
